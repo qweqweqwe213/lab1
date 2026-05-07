@@ -2,8 +2,14 @@ from flask import Flask, render_template, request
 from PIL import Image
 import os
 import matplotlib.pyplot as plt
-
+from flask_wtf import FlaskForm, RecaptchaField
+from wtforms import SubmitField
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'secret123'
+
+app.config['RECAPTCHA_PUBLIC_KEY'] = '6Lcaf94sAAAAAEE_23_pP7KroL79G2-W3ha5mYje'
+app.config['RECAPTCHA_PRIVATE_KEY'] = '6Lcaf94sAAAAAKbI9IpKMlmbzpwNDSLLHKzoijPX'
 
 UPLOAD_FOLDER = 'static/uploads'
 RESULT_FOLDER = 'static/results'
@@ -15,12 +21,20 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 
+class UploadForm(FlaskForm):
+    recaptcha = RecaptchaField()
+    submit = SubmitField('Загрузить')
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
 
-    result_image = None
+    form = UploadForm()
 
-    if request.method == "POST":
+    result_image = None
+    graph_image = None
+
+    if request.method == "POST" and form.validate():
 
         file = request.files["image"]
 
@@ -31,8 +45,7 @@ def home():
 
             img = Image.open(filepath)
 
-            # график RGB
-
+            # RGB график
             img_rgb = img.convert("RGB")
 
             r = []
@@ -57,16 +70,13 @@ def home():
 
             w, h = img.size
 
-            # части картинки
             A = img.crop((0, 0, w // 2, h // 2))
             B = img.crop((w // 2, 0, w, h // 2))
             C = img.crop((0, h // 2, w // 2, h))
             D = img.crop((w // 2, h // 2, w, h))
 
-            # новая картинка
             new_img = Image.new("RGB", (w, h))
 
-            # сдвиг по часовой стрелке
             new_img.paste(C, (0, 0))
             new_img.paste(A, (w // 2, 0))
             new_img.paste(D, (0, h // 2))
@@ -77,11 +87,13 @@ def home():
             new_img.save(result_path)
 
             result_image = 'results/result.jpg'
+            graph_image = 'results/graph.png'
 
     return render_template(
         "index.html",
         result_image=result_image,
-        graph_image='results/graph.png'
+        graph_image=graph_image,
+        form=form
     )
 
 

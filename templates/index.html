@@ -8,8 +8,15 @@
 <h1>Загрузка изображения</h1>
 
 <form method="POST" enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+
     <input type="file" name="image">
+
+    {{ form.recaptcha }}
+
     <button type="submit">Загрузить</button>
+
 </form>
 
 {% if result_image %}
