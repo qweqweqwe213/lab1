@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Upload</title>
+</head>
+<body>
+
+<h1>Загрузка изображения</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="image">
+    <button type="submit">Загрузить</button>
+</form>
+
+{% if result_image %}
+
+<h2>Результат</h2>
+
+<img src="{{ url_for('static', filename=result_image) }}" width="400">
+<h2>График RGB</h2>
+
+<img src="{{ url_for('static', filename=graph_image) }}" width="600">
+
+{% endif %}
+
+</body>
+</html>
